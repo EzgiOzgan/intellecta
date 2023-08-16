@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import Intellecta from "src/main";
 
+// Class to manage Settings UI
 export class IntellectaSettingTab extends PluginSettingTab{
     plugin: Intellecta;
 

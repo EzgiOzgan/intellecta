@@ -1,5 +1,6 @@
 import {Menu, Plugin} from "obsidian";
 import { IntellectaSettingTab } from "./ui/settings";
+import { LiteratureGenView, VIEW_TYPE_LITERATURE } from "./ui/literatureGen";
 
 const DEFAULT_SETTINGS: IntellectaSettings = {
     // OpenAI API key
@@ -13,6 +14,7 @@ export default class Intellecta extends Plugin {
     async onload() {
         await this.loadSettings();
 
+        // This element allows user to interact with plugin through ribbon
         this.addRibbonIcon("brain-circuit","Card Generator",(event) => {
             // Shows a menu with three options corresponding different card types
             const cardTypeMenu = new Menu();
@@ -20,7 +22,12 @@ export default class Intellecta extends Plugin {
                 {
                     title: "Literature",
                     clickHandler: () => {
-                        // Literature review card generation function
+                        this.registerView(
+                            VIEW_TYPE_LITERATURE,
+                            (leaf) =>
+                                new LiteratureGenView(leaf)
+                        )
+                        this.activateView(VIEW_TYPE_LITERATURE);
                     }
                 },
                 {
@@ -48,6 +55,7 @@ export default class Intellecta extends Plugin {
             cardTypeMenu.showAtMouseEvent(event);
         })
 
+        // This element allows user to change the settings
         this.addSettingTab(new IntellectaSettingTab(this.app, this));
     }
 
@@ -64,5 +72,19 @@ export default class Intellecta extends Plugin {
     async saveSettings() {
         // Saves the changes in settings
         await this.saveData(this.settings);
+    }
+
+    async activateView(viewType: string) {
+        // Activates the chosen view
+        this.app.workspace.detachLeavesOfType(viewType);
+
+        await this.app.workspace.getRightLeaf(false).setViewState({
+            type: viewType,
+            active: true,
+        });
+
+        this.app.workspace.revealLeaf(
+            this.app.workspace.getLeavesOfType(viewType)[0]
+        );
     }
 }
