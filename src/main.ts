@@ -1,11 +1,17 @@
-import {Menu, Plugin} from "obsidian";
+import { Menu, Plugin, Notice, TFolder } from "obsidian";
 import { IntellectaSettingTab } from "./ui/settings";
-import { LiteratureGenView, VIEW_TYPE_LITERATURE } from "./ui/literatureGen";
+import { LiteratureGenView, VIEW_TYPE_LITERATURE } from "./ui/literatureCardUI";
 
 const DEFAULT_SETTINGS: IntellectaSettings = {
-    // OpenAI API key
+    // General OpenAI Settings
     apiKey: "",
-    engine: "gpt-3.5-turbo-0613"
+    engine: "gpt-3.5-turbo-0613",
+    // Card Generation Specific Settings
+    CG_Temperature: 0.8,
+    CG_MaxTokens: 256,
+    CG_TopP: 1,
+    CG_FrequencyPenalty: 0,
+    CG_PresencePenalty: 0,
 };
 
 export default class Intellecta extends Plugin {
@@ -13,6 +19,37 @@ export default class Intellecta extends Plugin {
 
     async onload() {
         await this.loadSettings();
+
+        // Checks if the "Zettelkasten" folder with required fodler content exists; if not, create
+        const folderStructure = [
+            "Zettelkasten",
+            "Zettelkasten/Permanent",
+            "Zettelkasten/Conceptual",
+            "Zettelkasten/Literature",
+            "Zettelkasten/Literature/Unprocessed"
+          ];
+          
+        for (const folderPath of folderStructure) {
+            const existingFolder = this.app.vault.getAbstractFileByPath(folderPath) as TFolder;
+          
+            if (!existingFolder) {
+                const parts = folderPath.split("/");
+                let currentPath = "";
+                for (const part of parts) {
+                currentPath = currentPath ? `${currentPath}/${part}` : part;
+                this.app.vault.createFolder(currentPath);
+                }
+            }
+        }
+        
+        // Listens if a new file is created in unprocessed notes to insert template
+        // const chokidar = require("chokidar");
+        // const unprocessedDirectory = this.app.vault.getAbstractFileByPath("Zettelkasten/Literature/Unprocessed")?.path;
+        // const watcher = chokidar.watch(unprocessedDirectory);
+
+        // watcher.on('add', (filePath) => {
+            
+        // })
 
         // This element allows user to interact with plugin through ribbon
         this.addRibbonIcon("brain-circuit","Card Generator",(event) => {

@@ -7,7 +7,6 @@ export class IntellectaSettingTab extends PluginSettingTab{
 
     constructor(app: App, plugin: Intellecta){
         super(app, plugin);
-        this.plugin = plugin;
     }
 
     display(): void{
